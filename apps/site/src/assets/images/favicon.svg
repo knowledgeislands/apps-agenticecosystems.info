@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Agentic Ecosystems">
+  <style>
+    .ring { fill: none; stroke: #1f4e79; stroke-width: 2.5; }
+    .node { fill: #1f4e79; }
+    @media (prefers-color-scheme: dark) {
+      .ring { stroke: #9cc3e6; }
+      .node { fill: #9cc3e6; }
+    }
+  </style>
+  <circle class="ring" cx="16" cy="16" r="12" />
+  <circle class="node" cx="16" cy="16" r="3.5" />
+  <circle class="node" cx="16" cy="4" r="2.5" />
+  <circle class="node" cx="26.4" cy="22" r="2.5" />
+  <circle class="node" cx="5.6" cy="22" r="2.5" />
+</svg>

@@ -1,0 +1,311 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* The page's composition. Every colour is a role from tokens.css, so this file reads the same in light and dark. */
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.6;
+  }
+
+  main {
+    flex: 1;
+  }
+
+  h1,
+  h2,
+  h3 {
+    line-height: 1.2;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+
+  h1 {
+    font-size: clamp(2.25rem, 5vw + 1rem, 3.5rem);
+  }
+
+  h2 {
+    font-size: clamp(1.6rem, 2vw + 1rem, 2.1rem);
+  }
+
+  h3 {
+    font-size: 1.15rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+
+  a:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  [id] {
+    scroll-margin-top: 5rem;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 50;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+  }
+
+  .skip-link:focus {
+    top: 1rem;
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    border-bottom: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-background) 92%, transparent);
+    backdrop-filter: blur(6px);
+  }
+
+  .header-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    padding-block: 0.75rem;
+  }
+
+  .wordmark {
+    font-weight: 700;
+    color: var(--color-foreground);
+    text-decoration: none;
+  }
+
+  .nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+  }
+
+  .nav-list a {
+    color: var(--color-muted-foreground);
+    text-decoration: none;
+  }
+
+  .nav-list a:hover {
+    color: var(--color-foreground);
+    text-decoration: underline;
+  }
+
+  .hero {
+    padding-block: 3.5rem 2.5rem;
+  }
+
+  .hero p {
+    max-width: var(--measure);
+    margin-top: 1rem;
+  }
+
+  .lede {
+    font-size: 1.25rem;
+    color: var(--color-foreground);
+  }
+
+  .notice {
+    max-width: var(--measure);
+    margin-top: 1.75rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid var(--notice-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-notice);
+    color: var(--color-notice-foreground);
+  }
+
+  .notice p {
+    margin: 0;
+  }
+
+  .band {
+    padding-block: 3rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .band-inset {
+    background: var(--color-muted);
+  }
+
+  .section-intro {
+    max-width: var(--measure);
+    margin-top: 0.5rem;
+    color: var(--color-muted-foreground);
+  }
+
+  .card {
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-card);
+    color: var(--color-card-foreground);
+  }
+
+  .term-grid,
+  .product-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  }
+
+  .term-grid {
+    margin-top: 1.5rem;
+  }
+
+  .term-grid dt {
+    font-weight: 650;
+  }
+
+  .term-grid dd p {
+    margin-top: 0.4rem;
+  }
+
+  .also {
+    font-size: 0.9rem;
+    color: var(--color-muted-foreground);
+  }
+
+  .ladder {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    max-width: 48rem;
+  }
+
+  .rung {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    background: var(--color-card);
+  }
+
+  .rung-label {
+    font-weight: 650;
+    min-width: 11rem;
+  }
+
+  .rung-summary {
+    flex: 1 1 16rem;
+    color: var(--color-muted-foreground);
+  }
+
+  .product-name {
+    font-weight: 650;
+  }
+
+  .product-maker,
+  .roles-pending {
+    font-size: 0.9rem;
+    color: var(--color-muted-foreground);
+  }
+
+  .product-note {
+    margin-top: 0.5rem;
+  }
+
+  .roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.4rem;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.05rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.5;
+    vertical-align: middle;
+    background: var(--color-accent);
+    color: var(--color-accent-foreground);
+  }
+
+  .badge-placeholder {
+    background: var(--color-notice);
+    color: var(--color-notice-foreground);
+    border: 1px dashed var(--notice-border);
+  }
+
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    padding-block: 1.75rem;
+    color: var(--color-muted-foreground);
+  }
+
+  .footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+  }
+
+  .footer-meta {
+    font-size: 0.9rem;
+  }
+
+  .ext-icon {
+    display: inline;
+    margin-left: 0.2em;
+    vertical-align: -0.05em;
+  }
+}

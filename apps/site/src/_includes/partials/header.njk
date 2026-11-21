@@ -1,0 +1,13 @@
+{# The site header: the wordmark and the page's sections, in the order `site.nav` gives them. #}
+<header class="site-header">
+  <div class="container header-row">
+    <a class="wordmark" href="/">{{ site.title }}</a>
+    <nav aria-label="Sections">
+      <ul class="nav-list">
+        {%- for item in site.nav %}
+        <li><a href="{{ item.href }}">{{ item.label }}</a></li>
+        {%- endfor %}
+      </ul>
+    </nav>
+  </div>
+</header>

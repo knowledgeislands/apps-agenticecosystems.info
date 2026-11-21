@@ -1,0 +1,19 @@
+{
+  // info-agenticecosystems — Cloudflare Workers Static Assets deployment, not Pages.
+  // The Worker name is the hostname reversed, as every Personal-account Worker is.
+  "name": "info-agenticecosystems",
+  "compatibility_date": "2026-11-01",
+  // Eleventy builds to dist/ inside this workspace; the Worker serves it directly.
+  "assets": { "directory": "dist" },
+  // Custom domains — apex plus www (www → apex via a Cloudflare redirect rule).
+  "routes": [
+    { "pattern": "agenticecosystems.info", "custom_domain": true },
+    { "pattern": "www.agenticecosystems.info", "custom_domain": true }
+  ],
+  // The custom domains are the only addresses: no workers.dev or preview URL.
+  // Both default to on.
+  "workers_dev": false,
+  "preview_urls": false,
+  // Persist Workers logs in the dashboard (Workers & Pages → info-agenticecosystems → Logs).
+  "observability": { "enabled": true }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Agentic Ecosystems",
+  "short_name": "Agentic Ecosystems",
+  "description": "A public reference map of agentic systems: the terms, the layers and the products.",
+  "start_url": "/",
+  "display": "browser",
+  "icons": [{ "src": "/assets/images/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

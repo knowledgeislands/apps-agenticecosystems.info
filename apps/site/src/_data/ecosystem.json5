@@ -1,0 +1,117 @@
+// The ecosystem map the page renders: its terms, its layers and its products.
+//
+// This file is not the canonical source. The knowledge is planned to live in Knowledge Islands Principal, as the
+// Agentic Ecosystems knowledge graph in `Resources/Agentic Ecosystems/`, layered under the KI Agent Backpack's
+// `ki-agentic-systems` terms. A later sync replaces this file from there, at a pinned revision, and every entry then
+// cites its card.
+//
+// Until then it is a seed. It holds only what the plan for the map already states, and every entry is marked
+// `placeholder: true`, which the page shows. `scripts/verify-ecosystem.ts` validates the shape during the build.
+{
+  meta: {
+    status: 'placeholder',
+    revised: '2026-11-21',
+    seededFrom: 'the Knowledge Islands plan for the agentic systems ecosystem map, 21 November 2026',
+    canonicalHome: 'Knowledge Islands Principal, Resources/Agentic Ecosystems/ (planned)',
+  },
+
+  terms: [
+    {
+      id: 'agent-host',
+      label: 'Agent host',
+      definition: 'The surface that manages agentic sessions, such as Orca. It is distinct from the machine and from the execution environment.',
+      placeholder: true,
+    },
+    {
+      id: 'agentic-harness',
+      label: 'Agentic harness',
+      alsoCalled: ['agent harness'],
+      definition: 'What an agentic session runs through, such as Claude Code. Anthropic writes "agentic harness"; Google and Microsoft write "agent harness".',
+      placeholder: true,
+    },
+    {
+      id: 'agentic-session',
+      label: 'Agentic session',
+      definition: 'A session that uses an agentic harness and a large language model.',
+      placeholder: true,
+    },
+    {
+      id: 'execution-environment',
+      label: 'Execution environment',
+      definition: "The bounded place where a session's tool calls actually run: the files, processes, network and credentials they can reach. It has a location and an isolation. It may be provided by the agent host, the harness or the vendor, but it is none of them. A worktree is a working folder, not an environment.",
+      placeholder: true,
+    },
+    {
+      id: 'actor',
+      label: 'Actor',
+      definition: 'The umbrella for whoever does the work, whether through sessions or as a bot. Session and bot are the two actor types.',
+      placeholder: true,
+    },
+    {
+      id: 'bot',
+      label: 'Bot',
+      definition: 'A durable, multi-session identity with its own memory and processes.',
+      placeholder: true,
+    },
+    {
+      id: 'product-role',
+      label: 'Product role',
+      definition: 'A part a product plays in the ecosystem: model, harness, application, host or bot. One product may play several.',
+      placeholder: true,
+    },
+  ],
+
+  layers: {
+    note: 'The rungs are the terms the plan names, from the machine up to the model. Their order and wording wait on the terminology crosswalk.',
+    rungs: [
+      { id: 'machine', label: 'Machine', summary: 'The computer the work runs on. A virtual machine counts as a machine.', placeholder: true },
+      { id: 'execution-environment', label: 'Execution environment', summary: "Where a session's tool calls run, with its location and its isolation.", placeholder: true },
+      { id: 'agent-host', label: 'Agent host', summary: 'The surface that manages sessions.', placeholder: true },
+      { id: 'agentic-harness', label: 'Agentic harness', summary: 'What a session runs through.', placeholder: true },
+      { id: 'agentic-session', label: 'Agentic session', summary: 'Uses an agentic harness and a model.', placeholder: true },
+      { id: 'model', label: 'Model', summary: 'The large language model a session uses.', placeholder: true },
+    ],
+  },
+
+  productRoles: [
+    { id: 'model', label: 'Model' },
+    { id: 'harness', label: 'Harness' },
+    { id: 'application', label: 'Application' },
+    { id: 'host', label: 'Host' },
+    { id: 'bot', label: 'Bot' },
+  ],
+
+  productGroups: [
+    { id: 'vendors', label: 'Major vendors' },
+    { id: 'chinese-providers', label: 'Chinese providers and models' },
+    { id: 'local-models', label: 'Local models' },
+    { id: 'hosts-and-bots', label: 'Hosts and bot platforms' },
+    { id: 'applications-and-harnesses', label: 'Applications and harnesses' },
+  ],
+
+  products: [
+    { id: 'google', name: 'Google', group: 'vendors', roles: [], placeholder: true },
+    { id: 'microsoft', name: 'Microsoft', group: 'vendors', roles: [], placeholder: true },
+    { id: 'anthropic', name: 'Anthropic', group: 'vendors', roles: [], placeholder: true },
+    { id: 'openai', name: 'OpenAI', group: 'vendors', roles: [], placeholder: true },
+    { id: 'xai-grok', name: 'Grok', maker: 'xAI', group: 'vendors', roles: [], placeholder: true },
+
+    { id: 'qwen', name: 'Qwen', group: 'chinese-providers', roles: [], placeholder: true },
+    { id: 'deepseek', name: 'DeepSeek', group: 'chinese-providers', roles: [], placeholder: true },
+    { id: 'glm', name: 'GLM', group: 'chinese-providers', roles: [], placeholder: true },
+    { id: 'kimi', name: 'Kimi', group: 'chinese-providers', roles: [], placeholder: true },
+    { id: 'minimax', name: 'MiniMax', group: 'chinese-providers', roles: [], placeholder: true },
+    { id: 'z-ai', name: 'Z.ai', group: 'chinese-providers', roles: [], note: 'A separate entry from Zed Industries.', placeholder: true },
+
+    { id: 'local-models', name: 'Local models', group: 'local-models', roles: ['model'], note: 'Models run on your own machine, and the approaches to running them.', placeholder: true },
+
+    { id: 'orca', name: 'Orca', group: 'hosts-and-bots', roles: ['host'], note: 'An agent host: it manages agentic sessions.', placeholder: true },
+    { id: 'openclaw', name: 'OpenClaw', group: 'hosts-and-bots', roles: [], placeholder: true },
+    { id: 'paperclip', name: 'Paperclip', group: 'hosts-and-bots', roles: [], note: 'An orchestrator. Its own word "hires" is one the crosswalk compares.', placeholder: true },
+    { id: 'gas-city', name: 'Gas City', group: 'hosts-and-bots', roles: [], note: 'An orchestrator.', placeholder: true },
+
+    { id: 'claude-code', name: 'Claude Code', maker: 'Anthropic', group: 'applications-and-harnesses', roles: ['harness'], note: 'An agentic harness.', placeholder: true },
+    { id: 'zed', name: 'Zed', maker: 'Zed Industries', group: 'applications-and-harnesses', roles: [], note: 'An editor. A separate entry from Z.ai.', placeholder: true },
+    { id: 'delta', name: 'Delta', maker: 'Zed Industries', group: 'applications-and-harnesses', roles: [], note: 'A collaborative thread with its own worktree, in public beta in November 2026.', placeholder: true },
+  ],
+}
