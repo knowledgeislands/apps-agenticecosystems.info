@@ -3,6 +3,8 @@
   // It deploys to the Knowledge Islands Cloudflare account. The Worker name is the
   // hostname reversed.
   "name": "info-agenticecosystems",
+  // The Knowledge Islands account (renamed from Mark Howarth on 22 November 2026).
+  "account_id": "4fbae92e1b7ef957f2b47a163762eae4",
   "compatibility_date": "2026-11-01",
   // Eleventy builds to dist/ inside this workspace; the Worker serves it directly.
   "assets": { "directory": "dist" },
