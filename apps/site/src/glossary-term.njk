@@ -1,0 +1,62 @@
+---
+layout: layouts/base.njk
+pagination:
+  data: ecosystemMap.glossary
+  size: 1
+  alias: term
+permalink: "/glossary/{{ term.slug }}/"
+eleventyComputed:
+  title: "{{ term.label }}"
+---
+{#- Generated: one page per term card in `_data/ecosystemMap.json5`, its whole card, the vendors' words for it from the
+    crosswalk and the products whose cards say they are an instance of it. #}
+{%- import "macros/map.njk" as m %}
+{%- set map = ecosystemMap %}
+{%- set crosswalk = map.crosswalk | whereEq("id", term.id) | first %}
+
+<section class="hero hero-compact" aria-labelledby="page-title">
+  <div class="container">
+    <p class="breadcrumb"><a href="/glossary/">Glossary</a></p>
+    <h1 id="page-title">{{ term.label }} {{ m.statusBadge(term.status) }}</h1>
+    <p class="product-maker">{% if term.kind == "industry" %}The industry's term{% else %}A Knowledge Islands word{% endif %} · <a href="{{ term.cardUrl }}">its card</a></p>
+    {{ m.siteDraftNotice(map.source, "This page is generated from the term's card.") }}
+  </div>
+</section>
+
+<section id="definition" class="band" aria-labelledby="definition-title">
+  <div class="container prose">
+    <h2 id="definition-title" class="sr-only">Definition</h2>
+    {{ term.bodyHtml | safe }}
+  </div>
+</section>
+
+{%- set hasWords = false %}
+{%- if crosswalk %}{% for column in crosswalk.words %}{% if column.entries.length %}{% set hasWords = true %}{% endif %}{% endfor %}{% endif %}
+{%- if hasWords %}
+<section id="vendor-words" class="band band-inset" aria-labelledby="words-title">
+  <div class="container">
+    <h2 id="words-title">What each vendor calls it</h2>
+    <dl class="facts">
+      {%- for column in crosswalk.words %}
+      {%- if column.entries.length %}
+      <div><dt>{{ column.vendor }}</dt><dd>{% for word in column.entries %}<a href="{{ word.url }}">{{ word.word }}</a> ({{ word.match }}){% if not loop.last %}, {% endif %}{% endfor %}</dd></div>
+      {%- endif %}
+      {%- endfor %}
+    </dl>
+    <p class="section-intro">See the <a href="/crosswalk/#term-{{ term.slug }}">crosswalk</a> for every term side by side.</p>
+  </div>
+</section>
+{%- endif %}
+
+{%- if term.instances.length %}
+<section id="instances" class="band" aria-labelledby="instances-title">
+  <div class="container">
+    <h2 id="instances-title">Products that are an instance of it</h2>
+    <ul class="roles">
+      {%- for product in term.instances %}
+      <li class="badge"><a href="/products/{{ product.slug }}/">{{ product.name }}</a></li>
+      {%- endfor %}
+    </ul>
+  </div>
+</section>
+{%- endif %}

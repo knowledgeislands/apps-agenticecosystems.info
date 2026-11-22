@@ -214,11 +214,11 @@ describe('the cruise of the site workspace', () => {
   })
 
   test('resolves a command reaching a shared helper to the real module', () => {
-    const command = graph.modules.find((module) => module.source === 'apps/site/scripts/verify-ecosystem.ts')
-    const helper = command?.dependencies.find((dependency) => dependency.module === './lib/ecosystem.ts')
+    const command = graph.modules.find((module) => module.source === 'apps/site/scripts/verify-ecosystem-map.ts')
+    const helper = command?.dependencies.find((dependency) => dependency.module === './lib/ecosystem-map.ts')
 
     expect(helper?.couldNotResolve).toBe(false)
-    expect(helper?.resolved).toBe('apps/site/scripts/lib/ecosystem.ts')
+    expect(helper?.resolved).toBe('apps/site/scripts/lib/ecosystem-map.ts')
   })
 
   test('finds no violation', () => {

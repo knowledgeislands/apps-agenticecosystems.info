@@ -7,6 +7,7 @@ import {
   parseSources,
   parseStateOfPlay,
   referenceDefinitions,
+  renderBlocks,
   renderInline,
   splitFrontMatter
 } from './cards.ts'
@@ -171,5 +172,23 @@ describe('sources and inline Markdown', () => {
       'A <a href="https://example.com/model">model</a> runs <code>&lt;cmd&gt;</code> <strong>now</strong> ' +
         '(<a href="https://example.com/a">S1</a>, S2) &lt;b&gt;'
     )
+  })
+})
+
+describe('renderBlocks', () => {
+  test('renders paragraphs, headings, lists and tables below the title, dropping reference definitions', () => {
+    const body =
+      '# Term\n\nA [model][m] decides\nand acts.\n\n## Next\n\n1. First\n2. Second\n\n- One\n  continued\n\n' +
+      '| A | B |\n| --- | --- |\n| x | **y** |\n\n[m]: ./model.md\n'
+    expect(renderBlocks(body, (label) => (label === 'm' ? '/glossary/model/' : undefined))).toBe(
+      '<p>A <a href="/glossary/model/">model</a> decides and acts.</p>\n<h3>Next</h3>\n' +
+        '<ol><li>First</li><li>Second</li></ol>\n<ul><li>One continued</li></ul>\n' +
+        '<table><thead><tr><th scope="col">A</th><th scope="col">B</th></tr></thead>' +
+        '<tbody><tr><td>x</td><td><strong>y</strong></td></tr></tbody></table>'
+    )
+  })
+
+  test('escapes markup in a card', () => {
+    expect(renderBlocks('# T\n\n<script>x</script>\n', () => undefined)).toBe('<p>&lt;script&gt;x&lt;/script&gt;</p>')
   })
 })

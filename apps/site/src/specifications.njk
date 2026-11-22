@@ -1,0 +1,43 @@
+---
+layout: layouts/base.njk
+title: Specifications
+permalink: /specifications/
+---
+{#- Generated: every specification card in `_data/ecosystemMap.json5`, each with its parts and the products whose cards
+    say they conform to it. #}
+{%- import "macros/map.njk" as m %}
+{%- set map = ecosystemMap %}
+
+<section class="hero hero-compact" aria-labelledby="page-title">
+  <div class="container">
+    <h1 id="page-title">Specifications</h1>
+    <p class="lede">The open specifications the map's terms rest on, each with its parts.</p>
+    <ul class="roles" aria-label="Specifications">
+      {%- for spec in map.specifications %}
+      <li class="badge"><a href="#{{ spec.anchor }}">{{ spec.label }}</a></li>
+      {%- endfor %}
+    </ul>
+    {{ m.siteDraftNotice(map.source, "This page is generated from the specification cards.") }}
+    {#- Image slot 6, which protocols connect which parts (docs/design/image-brief.md). #}
+    {% imageSlot "protocols", "Which specification connects which parts: MCP between an agent and its tools, ACP between a client and an agent, AHP between a client and an agent host, A2A between agents, and Agent Skills for what an agent harness loads." %}
+  </div>
+</section>
+
+{%- for spec in map.specifications %}
+<section id="{{ spec.anchor }}" class="band{% if loop.index is even %} band-inset{% endif %}" aria-labelledby="{{ spec.anchor }}-title">
+  <div class="container prose">
+    <h2 id="{{ spec.anchor }}-title">{{ spec.label }} {{ m.statusBadge(spec.status) }}</h2>
+    <p class="product-maker"><a href="{{ spec.cardUrl }}">its card</a></p>
+    {{ spec.bodyHtml | safe }}
+    {%- if spec.conforming.length %}
+    <p><strong>Products whose cards say they conform:</strong> {% for product in spec.conforming %}<a href="/products/{{ product.slug }}/">{{ product.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.</p>
+    {%- endif %}
+    {%- for part in spec.parts %}
+    <div class="card" id="{{ part.anchor }}">
+      <h3>{{ part.label }} {% if part.status != "agreed" %}{{ m.statusBadge(part.status) }}{% endif %} <a class="product-maker" href="{{ part.cardUrl }}">its card</a></h3>
+      {{ part.bodyHtml | safe }}
+    </div>
+    {%- endfor %}
+  </div>
+</section>
+{%- endfor %}

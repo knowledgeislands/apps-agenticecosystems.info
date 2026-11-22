@@ -31,12 +31,15 @@ eleventyComputed:
     {%- if product.status == "proposal" %}
     {{ m.draftNotice(product.reviewed, map.source, "This product card and its facts are") }}
     {%- endif %}
+    <p class="notice-source"><a href="/how-to-read/">How to read a product card</a>.</p>
   </div>
 </section>
 
 <section id="capabilities" class="band" aria-labelledby="capabilities-title">
   <div class="container">
     <h2 id="capabilities-title">Capabilities</h2>
+    {#- Image slot 4, a product card's anatomy (docs/design/image-brief.md). #}
+    {% imageSlot "product-card-anatomy", "The parts of a product card: what it is, its capabilities table of term, value, detail and sources, its dated state of play, and its sources with the dates they were read." %}
     <div class="matrix-scroll" role="region" aria-labelledby="capabilities-title" tabindex="0">
       <table class="capabilities">
         <thead>

@@ -67,9 +67,7 @@ describe('buildEcosystemMap', () => {
       read: '2026-11-22',
       url: 'https://openai.com/codex'
     })
-    expect(codex.summaryHtml).toContain(
-      `<a href="https://github.com/knowledgeislands/ki-agent-backpack/blob/${REF}/skills/keystone/ki-agentic-ecosystems/knowledge/industry/industry.model.md">model</a>`
-    )
+    expect(codex.summaryHtml).toContain('<a href="/glossary/model/">model</a>')
     expect(codex.instanceOf.map((c) => c.label)).toEqual(['Model'])
     expect(map.crosswalk.map((t) => t.slug)).toEqual(['session', 'model'])
     expect(map.crosswalk[0].words).toEqual([
@@ -87,6 +85,37 @@ describe('buildEcosystemMap', () => {
         ]
       }
     ])
+  })
+
+  test('builds a glossary page per term and the specifications with their parts', () => {
+    const more = files()
+    more.set(
+      'knowledge/specs/mcp/spec.mcp.md',
+      `---\nid: spec.mcp\ntitle: MCP\ntype: specification\nstatus: agreed\nlinks:\n  spec.mcp.tools:\n` +
+        `    predicate: dcterms:hasPart\n---\n\n# MCP\n\nMCP connects tools, among them [its tools][spec.mcp.tools].\n\n` +
+        `## Parts\n\n- One part.\n- Another.\n\n[spec.mcp.tools]: ./spec.mcp.tools.md\n`
+    )
+    more.set(
+      'knowledge/specs/mcp/spec.mcp.tools.md',
+      `---\nid: spec.mcp.tools\ntitle: MCP tools\ntype: specification\nstatus: proposal\n---\n\n# MCP tools\n\nTools.\n`
+    )
+    more.set(
+      'knowledge/system/system.bot.md',
+      `---\nid: system.bot\ntitle: Bot\ntype: system-term\nstatus: proposal\n---\n\n# Bot\n\nA bot has a home.\n`
+    )
+    const map = buildEcosystemMap(more, { ref: REF, committed: '2026-11-22' })
+    expect(map.glossary.map((t) => [t.slug, t.kind, t.url])).toEqual([
+      ['session', 'industry', '/glossary/session/'],
+      ['model', 'industry', '/glossary/model/'],
+      ['bot', 'system', '/glossary/bot/']
+    ])
+    expect(map.glossary[1].instances).toEqual([{ slug: 'codex', name: 'Codex', vendor: 'OpenAI' }])
+    expect(map.specifications.map((s) => [s.anchor, s.parts.map((p) => p.anchor)])).toEqual([
+      ['spec-mcp', ['spec-mcp-tools']]
+    ])
+    expect(map.specifications[0].bodyHtml).toContain('<a href="/specifications/#spec-mcp-tools">its tools</a>')
+    expect(map.specifications[0].bodyHtml).toContain('<h4>Parts</h4>\n<ul><li>One part.</li><li>Another.</li></ul>')
+    expect(map.crosswalk[0].url).toBe('/glossary/session/')
   })
 
   test('refuses a product whose capability rows depart from the standard', () => {

@@ -1,0 +1,34 @@
+---
+layout: layouts/base.njk
+title: Glossary
+permalink: /glossary/
+---
+{#- Generated: every term card in `_data/ecosystemMap.json5`, the industry's in reading order, then Knowledge Islands'
+    own words. #}
+{%- import "macros/map.njk" as m %}
+{%- set map = ecosystemMap %}
+
+<section class="hero hero-compact" aria-labelledby="page-title">
+  <div class="container">
+    <h1 id="page-title">Glossary</h1>
+    <p class="lede">Every term in the map, each with a page of its own.</p>
+    <p>The industry's terms come first, in reading order: each uses only words defined before it, starting from the model. Knowledge Islands' own words follow, each mapped onto the industry's.</p>
+    {{ m.siteDraftNotice(map.source, "The glossary is generated from the term cards.") }}
+  </div>
+</section>
+
+{%- for group in [{ kind: "industry", title: "The industry's terms" }, { kind: "system", title: "Knowledge Islands' own words" }] %}
+<section class="band{% if loop.last %} band-inset{% endif %}" aria-labelledby="glossary-{{ group.kind }}">
+  <div class="container">
+    <h2 id="glossary-{{ group.kind }}">{{ group.title }}</h2>
+    <dl class="term-grid">
+      {%- for term in map.glossary | whereEq("kind", group.kind) %}
+      <div class="card" id="term-{{ term.slug }}">
+        <dt><a href="{{ term.url }}">{{ term.label }}</a>{% if term.status != "agreed" %} {{ m.statusBadge(term.status) }}{% endif %}</dt>
+        <dd><p>{{ term.summaryHtml | safe }}</p></dd>
+      </div>
+      {%- endfor %}
+    </dl>
+  </div>
+</section>
+{%- endfor %}

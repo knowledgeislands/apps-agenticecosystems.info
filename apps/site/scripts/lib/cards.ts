@@ -135,6 +135,67 @@ export const leadParagraph = (body: string, where: string): string => {
   return paragraph.join(' ')
 }
 
+/**
+ * Render a card's body below its `# title` as block HTML: paragraphs, `##` and `###` headings, one level of bulleted
+ * or numbered list, and simple tables, each line through `renderInline`. Link reference definitions are dropped, and
+ * headings are demoted by `demote` levels so they sit under the page's own. A card uses nothing richer than these.
+ */
+export const renderBlocks = (body: string, resolve: (label: string) => string | undefined, demote = 1): string => {
+  const lines = body.split('\n')
+  const title = lines.findIndex((line) => line.startsWith('# '))
+  const blocks: string[] = []
+  let paragraph: string[] = []
+  let list: { tag: 'ul' | 'ol'; items: string[] } | undefined
+  let table: string[][] = []
+  const flush = (): void => {
+    if (paragraph.length > 0) blocks.push(`<p>${renderInline(paragraph.join(' '), resolve)}</p>`)
+    paragraph = []
+    if (list !== undefined)
+      blocks.push(
+        `<${list.tag}>${list.items.map((item) => `<li>${renderInline(item, resolve)}</li>`).join('')}</${list.tag}>`
+      )
+    list = undefined
+    if (table.length > 0) {
+      const [head, , ...rows] = table
+      const th = head.map((cell) => `<th scope="col">${renderInline(cell, resolve)}</th>`).join('')
+      const tr = rows.map((row) => `<tr>${row.map((cell) => `<td>${renderInline(cell, resolve)}</td>`).join('')}</tr>`)
+      blocks.push(`<table><thead><tr>${th}</tr></thead><tbody>${tr.join('')}</tbody></table>`)
+    }
+    table = []
+  }
+  for (const raw of lines.slice(title + 1)) {
+    const line = raw.trimEnd()
+    if (/^\[[^\]\n]+\]:\s+\S+$/u.test(line)) continue
+    if (line.trim() === '') {
+      flush()
+      continue
+    }
+    const heading = line.match(/^(#{2,4}) (.+)$/u)
+    const bullet = line.match(/^- (.+)$/u)
+    const numbered = line.match(/^\d+\. (.+)$/u)
+    if (heading !== null) {
+      flush()
+      const level = Math.min(heading[1].length + demote, 6)
+      blocks.push(`<h${level}>${renderInline(heading[2], resolve)}</h${level}>`)
+    } else if (line.startsWith('|')) {
+      if (paragraph.length > 0 || list !== undefined) flush()
+      table.push(cells(line))
+    } else if (bullet !== null || numbered !== null) {
+      const tag = bullet !== null ? 'ul' : 'ol'
+      if (paragraph.length > 0 || table.length > 0 || (list !== undefined && list.tag !== tag)) flush()
+      list ??= { tag, items: [] }
+      list.items.push((bullet ?? numbered)?.[1] ?? '')
+    } else if (list !== undefined && /^\s+\S/u.test(raw)) {
+      list.items[list.items.length - 1] += ` ${line.trim()}`
+    } else {
+      if (list !== undefined || table.length > 0) flush()
+      paragraph.push(line.trim())
+    }
+  }
+  flush()
+  return blocks.join('\n')
+}
+
 /** Split one Markdown table row into its trimmed cells. Cells here never hold an escaped pipe. */
 const cells = (line: string): string[] =>
   line

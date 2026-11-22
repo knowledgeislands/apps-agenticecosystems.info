@@ -3,91 +3,83 @@ layout: layouts/base.njk
 title: Agentic Ecosystems
 permalink: /
 ---
-{#- The one page. Every term, layer and product comes from `_data/ecosystem.json5`; nothing here is content. #}
-{%- macro placeholderBadge(entry) -%}
-{%- if entry.placeholder %}<span class="badge badge-placeholder">Placeholder</span>{% endif -%}
-{%- endmacro %}
+{#- The home page. Every term, product and specification comes from `_data/ecosystemMap.json5`, generated from the
+    backpack's knowledge map; the only words written here say what each page is for. #}
+{%- import "macros/map.njk" as m %}
+{%- set map = ecosystemMap %}
 
 <section class="hero" aria-labelledby="page-title">
   <div class="container">
     <h1 id="page-title">{{ site.title }}</h1>
-    <p class="lede">A public reference map of agentic systems: the terms, the layers and the products.</p>
-    <p>It sets out the words the field uses and what each vendor means by them, the layers from the machine up to the model, and the products that play each part, with what each one can do and its state of play.</p>
-    {%- if ecosystem.meta.status == "placeholder" %}
-    <aside class="notice" aria-label="Status">
-      <p><strong>First cut.</strong> Every entry below is a placeholder, seeded from {{ ecosystem.meta.seededFrom }}. The researched map will replace it from its canonical home in {{ ecosystem.meta.canonicalHome }}.</p>
-    </aside>
-    {%- endif %}
-    <aside class="notice notice-draft" aria-label="Researched so far">
-      <p><strong>Researched so far, in draft.</strong> {{ ecosystemMap.products.length }} products are read against {{ ecosystemMap.capabilities.length }} capabilities in the <a href="/matrix/">capability matrix</a>, each with its own page, and the <a href="/crosswalk/">crosswalk</a> sets each term beside what each vendor calls it. They are generated from the Knowledge Islands backpack's knowledge map, as of {{ ecosystemMap.source.reviewed | longDate }}, and are proposals awaiting review.</p>
-    </aside>
+    <p class="lede">A reference map of agentic ecosystems: the terms the field uses, the specifications that connect its parts, and the products that play each part.</p>
+    <p>{{ map.products.length }} products are read against {{ map.capabilities.length }} capabilities, {{ map.glossary.length }} terms are defined, and {{ map.specifications.length }} specifications are set out, every fact citing its source and the date it was read.</p>
+    {{ m.siteDraftNotice(map.source, "This reference is generated from the Knowledge Islands backpack's knowledge map.") }}
+    {#- Image slot 2, the ecosystem map at a glance (docs/design/image-brief.md). #}
+    {% imageSlot "ecosystem-map", "The agentic ecosystem at a glance: models, agent harnesses, agent hosts and clients, the specifications between them, and where the mapped products sit." %}
   </div>
 </section>
 
-<section id="terms" class="band" aria-labelledby="terms-title">
+<section id="start" class="band" aria-labelledby="start-title">
+  <div class="container">
+    <h2 id="start-title">Start here</h2>
+    <ul class="product-grid">
+      <li class="card"><p class="product-name"><a href="/overview/">Overview</a></p><p class="product-note">What an agentic ecosystem is, its layers from the model to the client, and the parts products play.</p></li>
+      <li class="card"><p class="product-name"><a href="/glossary/">Glossary</a></p><p class="product-note">A page for each term, with what each vendor calls it and the products that are an instance of it.</p></li>
+      <li class="card"><p class="product-name"><a href="/specifications/">Specifications</a></p><p class="product-note">The open specifications the terms rest on, each with its parts and the products that conform to it.</p></li>
+      <li class="card"><p class="product-name"><a href="/matrix/">Capability matrix</a></p><p class="product-note">Every product against every capability, each cell linked to its evidence.</p></li>
+      <li class="card"><p class="product-name"><a href="/crosswalk/">Crosswalk</a></p><p class="product-note">Each term beside the words each vendor uses for it.</p></li>
+      <li class="card"><p class="product-name"><a href="/how-to-read/">How to read this</a></p><p class="product-note">What the values mean, where the facts come from, and how drafts are marked.</p></li>
+    </ul>
+  </div>
+</section>
+
+<section id="terms" class="band band-inset" aria-labelledby="terms-title">
   <div class="container">
     <h2 id="terms-title">Terms</h2>
-    <p class="section-intro">The vocabulary of agentic systems, with the other words the field uses for the same thing.</p>
+    <p class="section-intro">The industry's terms, in reading order, each building on the ones before it. Each links its glossary page.</p>
     <dl class="term-grid">
-      {%- for term in ecosystem.terms %}
-      <div class="card" id="term-{{ term.id }}">
-        <dt>{{ term.label }} {{ placeholderBadge(term) }}</dt>
-        <dd>
-          <p>{{ term.definition }}</p>
-          {%- if term.alsoCalled and term.alsoCalled.length %}
-          <p class="also">Also called: {{ term.alsoCalled | join(", ") }}</p>
-          {%- endif %}
-        </dd>
+      {%- for term in map.glossary | whereEq("kind", "industry") %}
+      <div class="card" id="home-term-{{ term.slug }}">
+        <dt><a href="{{ term.url }}">{{ term.label }}</a>{% if term.status != "agreed" %} {{ m.statusBadge(term.status) }}{% endif %}</dt>
+        <dd><p>{{ term.summaryHtml | safe }}</p></dd>
       </div>
       {%- endfor %}
     </dl>
   </div>
 </section>
 
-<section id="layers" class="band band-inset" aria-labelledby="layers-title">
-  <div class="container">
-    <h2 id="layers-title">Layers</h2>
-    <p class="section-intro">{{ ecosystem.layers.note }}</p>
-    <ol class="ladder">
-      {%- for rung in ecosystem.layers.rungs %}
-      <li class="rung" id="layer-{{ rung.id }}">
-        <span class="rung-label">{{ rung.label }}</span>
-        <span class="rung-summary">{{ rung.summary }}</span>
-        {{ placeholderBadge(rung) }}
-      </li>
-      {%- endfor %}
-    </ol>
-  </div>
-</section>
-
 <section id="products" class="band" aria-labelledby="products-title">
   <div class="container">
     <h2 id="products-title">Products</h2>
-    <p class="section-intro">The products in the ecosystem and the product roles each one plays: {% for role in ecosystem.productRoles %}{{ role.label | lower }}{% if not loop.last %}, {% endif %}{% endfor %}. One product may play several.</p>
-    {%- for group in ecosystem.productGroups %}
-    <h3 id="group-{{ group.id }}">{{ group.label }}</h3>
-    <ul class="product-grid" aria-labelledby="group-{{ group.id }}">
-      {%- for product in ecosystem.products | whereEq("group", group.id) %}
-      <li class="card" id="product-{{ product.id }}">
-        <p class="product-name">{{ product.name }} {{ placeholderBadge(product) }}</p>
-        {%- if product.maker %}
-        <p class="product-maker">{{ product.maker }}</p>
-        {%- endif %}
-        {%- if product.roles.length %}
-        <ul class="roles" aria-label="Product roles">
-          {%- for role in product.roles %}
-          <li class="badge">{{ ecosystem.productRoles | labelFor(role) }}</li>
+    <p class="section-intro">Every product mapped so far, with the terms its card says it is an instance of. One product may be several. The <a href="/overview/#roles">overview</a> groups them by part.</p>
+    <ul class="product-grid">
+      {%- for product in map.products %}
+      <li class="card" id="product-{{ product.slug }}">
+        <p class="product-name"><a href="/products/{{ product.slug }}/">{{ product.name }}</a> {{ m.statusBadge(product.status) }}</p>
+        <p class="product-maker">{{ product.vendor }} · reviewed {{ product.reviewed | longDate }}</p>
+        {%- if product.instanceOf.length %}
+        <ul class="roles" aria-label="An instance of">
+          {%- for card in product.instanceOf %}
+          <li class="badge">{{ card.label }}</li>
           {%- endfor %}
         </ul>
-        {%- else %}
-        <p class="roles-pending">Product roles not yet mapped</p>
-        {%- endif %}
-        {%- if product.note %}
-        <p class="product-note">{{ product.note }}</p>
         {%- endif %}
       </li>
       {%- endfor %}
     </ul>
-    {%- endfor %}
+  </div>
+</section>
+
+<section id="specifications" class="band band-inset" aria-labelledby="specs-title">
+  <div class="container">
+    <h2 id="specs-title">Specifications</h2>
+    <dl class="term-grid">
+      {%- for spec in map.specifications %}
+      <div class="card">
+        <dt><a href="{{ spec.url }}">{{ spec.label }}</a>{% if spec.status != "agreed" %} {{ m.statusBadge(spec.status) }}{% endif %}</dt>
+        <dd><p>{{ spec.summaryHtml | safe }}</p></dd>
+      </div>
+      {%- endfor %}
+    </dl>
   </div>
 </section>

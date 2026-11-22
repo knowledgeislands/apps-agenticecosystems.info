@@ -1,0 +1,79 @@
+---
+layout: layouts/base.njk
+title: Overview
+permalink: /overview/
+---
+{#- Generated: what an agentic ecosystem is, its layers and the parts products play, all read from the term and
+    product cards in `_data/ecosystemMap.json5`. The words written here only join the cards' own. #}
+{%- import "macros/map.njk" as m %}
+{%- set map = ecosystemMap %}
+{%- set industry = map.glossary | whereEq("kind", "industry") %}
+{%- set system = map.glossary | whereEq("kind", "system") %}
+{%- set umbrella = map.glossary | whereEq("id", "industry.agentic-system") | first %}
+
+<section class="hero hero-compact" aria-labelledby="page-title">
+  <div class="container">
+    <h1 id="page-title">Overview</h1>
+    <p class="lede">What an agentic ecosystem is made of, and which part each product plays.</p>
+    {%- if umbrella %}
+    <p><a href="{{ umbrella.url }}">{{ umbrella.label }}</a>: {{ umbrella.summaryHtml | safe }}</p>
+    {%- endif %}
+    <p>This reference maps the ecosystem around such systems: the parts below, each defined once in the industry's own words on its own card, the specifications that connect them, and the products, each read against those definitions.</p>
+    {{ m.siteDraftNotice(map.source, "The overview is assembled from the term and product cards.") }}
+  </div>
+</section>
+
+<section id="layers" class="band" aria-labelledby="layers-title">
+  <div class="container">
+    <h2 id="layers-title">The parts, from the model up</h2>
+    <p class="section-intro">The industry's terms in reading order: each uses only the words defined before it.</p>
+    {#- Image slot 1, the layers stack (docs/design/image-brief.md). #}
+    {% imageSlot "layers-stack", "The layers of an agentic system, from the model through the agent harness, agent and session to the execution environment, machine, agent host and client." %}
+    <ol class="ladder">
+      {%- for term in industry %}
+      <li class="rung" id="layer-{{ term.slug }}">
+        <span class="rung-label"><a href="{{ term.url }}">{{ term.label }}</a></span>
+        <span class="rung-summary">{{ term.summaryHtml | safe }}</span>
+        {%- if term.status != "agreed" %} {{ m.statusBadge(term.status) }}{% endif %}
+      </li>
+      {%- endfor %}
+    </ol>
+  </div>
+</section>
+
+<section id="roles" class="band band-inset" aria-labelledby="roles-title">
+  <div class="container">
+    <h2 id="roles-title">The parts products play</h2>
+    <p class="section-intro">Each product card names the terms the product is an instance of, so one product may appear under several. The word for these parts is still under review.</p>
+    {#- Image slot 5, how the roles relate (docs/design/image-brief.md). #}
+    {% imageSlot "roles", "How the parts relate: a client is a window onto sessions an agent host owns; the host runs agent harnesses; each harness turns a model into an agent." %}
+    {%- for term in industry %}
+    {%- if term.instances.length %}
+    <div class="card" id="role-{{ term.slug }}">
+      <h3><a href="{{ term.url }}">{{ term.label }}</a></h3>
+      <p>{{ term.summaryHtml | safe }}</p>
+      <ul class="roles" aria-label="Products that are an instance of {{ term.label }}">
+        {%- for product in term.instances %}
+        <li class="badge"><a href="/products/{{ product.slug }}/">{{ product.name }}</a></li>
+        {%- endfor %}
+      </ul>
+    </div>
+    {%- endif %}
+    {%- endfor %}
+  </div>
+</section>
+
+<section id="actors" class="band" aria-labelledby="actors-title">
+  <div class="container">
+    <h2 id="actors-title">Knowledge Islands' own words</h2>
+    <p class="section-intro">Words of the Knowledge Islands system, each mapped onto the industry's terms, among them the actor and the bot: a durable, named agent with its own memory and processes.</p>
+    <dl class="term-grid">
+      {%- for term in system %}
+      <div class="card">
+        <dt><a href="{{ term.url }}">{{ term.label }}</a>{% if term.status != "agreed" %} {{ m.statusBadge(term.status) }}{% endif %}</dt>
+        <dd><p>{{ term.summaryHtml | safe }}</p></dd>
+      </div>
+      {%- endfor %}
+    </dl>
+  </div>
+</section>

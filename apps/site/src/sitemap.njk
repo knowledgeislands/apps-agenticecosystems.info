@@ -7,7 +7,7 @@ eleventyExcludeFromCollections: true
 {%- for item in collections.all %}
   <url>
     <loc>{{ site.url }}{{ item.url }}</loc>
-    <lastmod>{{ ecosystem.meta.revised }}</lastmod>
+    <lastmod>{{ ecosystemMap.source.reviewed }}</lastmod>
     <changefreq>weekly</changefreq>
   </url>
 {%- endfor %}

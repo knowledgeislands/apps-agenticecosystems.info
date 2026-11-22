@@ -589,4 +589,77 @@
       grid-template-columns: 1fr;
     }
   }
+
+  /* A card's whole body, on a glossary or specification page: the card's own paragraphs, lists and headings. */
+  .prose > :not(:first-child),
+  .prose .card > :not(:first-child) {
+    margin-top: 0.75rem;
+  }
+
+  .prose p,
+  .prose ul,
+  .prose ol {
+    max-width: var(--measure);
+  }
+
+  .prose ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+
+  .prose ol {
+    list-style: decimal;
+    padding-left: 1.25rem;
+  }
+
+  .prose h3,
+  .prose h4 {
+    font-weight: 650;
+    margin-top: 1.5rem;
+  }
+
+  .prose .card {
+    margin-top: 1.25rem;
+  }
+
+  .prose a,
+  .breadcrumb a {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .prose table {
+    border-collapse: collapse;
+    font-size: 0.95em;
+  }
+
+  .prose table th,
+  .prose table td {
+    border: 1px solid var(--color-border);
+    padding: 0.35rem 0.5rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  /* A designer's diagram, from src/assets/images/diagrams/, shown only once its file exists. */
+  .diagram {
+    margin-top: 1.5rem;
+  }
+
+  .diagram figcaption {
+    margin-top: 0.5rem;
+    color: var(--color-muted-foreground);
+    font-size: 0.9em;
+  }
+
+  .diagram img {
+    display: block;
+    width: 100%;
+    max-width: 60rem;
+    height: auto;
+  }
+
+  #roles .card + .card {
+    margin-top: 1rem;
+  }
 }

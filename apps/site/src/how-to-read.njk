@@ -1,0 +1,58 @@
+---
+layout: layouts/base.njk
+title: How to read this
+permalink: /how-to-read/
+---
+{#- A short reading note, restating the product cards standard the generator follows (its 4.4 and 4.5). #}
+{%- import "macros/map.njk" as m %}
+{%- set map = ecosystemMap %}
+
+<section class="hero hero-compact" aria-labelledby="page-title">
+  <div class="container">
+    <h1 id="page-title">How to read this</h1>
+    <p class="lede">What the values mean, where each fact comes from, and what "draft" means here.</p>
+    {{ m.siteDraftNotice(map.source, "This note restates the product cards standard the pages are generated under.") }}
+  </div>
+</section>
+
+<section class="band" aria-labelledby="where-title">
+  <div class="container">
+    <h2 id="where-title">Where it comes from</h2>
+    <p>Nothing on this site is written by hand. Each page is generated from cards in the Knowledge Islands backpack, the <code>ki-agentic-ecosystems</code> skill's knowledge map, read at one pinned commit: a card for each term, each specification and its parts, each vendor's own words, and each product. Each page links the card it came from. To correct a fact, the card changes and the site is regenerated.</p>
+    <p>Each product card says what the product is and who makes it, then reads it against {{ map.capabilities.length }} capabilities, each a term or specification from the <a href="/glossary/">glossary</a> or the <a href="/specifications/">specifications</a>, in the same order on every card so they line up in the <a href="/matrix/">matrix</a>. A dated state of play follows, newest first, then the card's sources.</p>
+    {#- Image slot 4, a product card's anatomy (docs/design/image-brief.md). #}
+    {% imageSlot "product-card-anatomy", "The parts of a product card: what it is, its capabilities table of term, value, detail and sources, its dated state of play, and its sources with the dates they were read." %}
+  </div>
+</section>
+
+<section id="values" class="band band-inset" aria-labelledby="values-title">
+  <div class="container">
+    <h2 id="values-title">The values</h2>
+    <dl class="legend">
+      <div><dt><span class="value value-yes" aria-hidden="true">{{ m.valueGlyph("yes") }}</span> Yes</dt><dd>a source says the product does it, generally available</dd></div>
+      <div><dt><span class="value value-partial" aria-hidden="true">{{ m.valueGlyph("partial") }}</span> Partial</dt><dd>a source says it does it in preview, beta or experimentally, only in part, or only through a separate adapter; the detail says which</dd></div>
+      <div><dt><span class="value value-no" aria-hidden="true">{{ m.valueGlyph("no") }}</span> No</dt><dd>a source says it does not</dd></div>
+      <div><dt><span class="value value-unknown" aria-hidden="true">{{ m.valueGlyph("unknown") }}</span> Unknown</dt><dd>no source read says either way; a feature missing from a maker's documentation is unknown, never no</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section id="evidence" class="band" aria-labelledby="evidence-title">
+  <div class="container">
+    <h2 id="evidence-title">Evidence and dates</h2>
+    <ul>
+      <li>Every fact is sourced, from a page read on the date its source gives, the maker's own documentation, changelog, repository or announcement first. A source id such as S1 links the source and says when it was read.</li>
+      <li>A fact read from the maker's own pages is the maker's claim. One the card's author saw for themselves says "observed".</li>
+      <li>Nothing is invented: where no source settles a question, the card says unknown.</li>
+      <li>Each product card carries the date it was last reviewed, and each state-of-play item its own date. Facts read so far date from {{ map.source.readDates | first | longDate }}{% if map.source.readDates.length > 1 %} to {{ map.source.readDates | last | longDate }}{% endif %}.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="status" class="band band-inset" aria-labelledby="status-title">
+  <div class="container">
+    <h2 id="status-title">Drafts and review</h2>
+    <p>A card is a proposal until its owner has reviewed it, and is then agreed. A proposal shows as {{ m.statusBadge("proposal") }}. Every product card is a proposal, and the <a href="{{ map.source.standardUrl }}">product cards standard</a> that sets their shape is itself a {{ map.source.standardStatus }}, so the whole site is labelled a draft, as of the latest review date, until they are reviewed.</p>
+    <p>The map describes; it does not judge. How mature a product is, who has adopted it and the house stance on it are kept elsewhere, in Knowledge Islands' radars.</p>
+  </div>
+</section>

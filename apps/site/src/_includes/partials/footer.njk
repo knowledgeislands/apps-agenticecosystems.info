@@ -2,6 +2,6 @@
 <footer class="site-footer">
   <div class="container footer-row">
     <p><a class="footer-parent" href="{{ site.parent.href }}">{{ site.parent.label }}</a></p>
-    <p class="footer-meta">Map revised {{ ecosystem.meta.revised }}</p>
+    <p class="footer-meta">Draft, as of {{ ecosystemMap.source.reviewed | longDate }} · cards at <code>{{ ecosystemMap.source.ref | truncate(9, true, "") }}</code></p>
   </div>
 </footer>

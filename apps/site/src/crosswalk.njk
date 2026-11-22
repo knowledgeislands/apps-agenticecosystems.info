@@ -12,9 +12,9 @@ permalink: /crosswalk/
     <h1 id="page-title">Crosswalk</h1>
     <p class="lede">Each term of the map, and what each vendor calls it.</p>
     <p>The terms are the industry's, in the map's reading order. A vendor's word is read from its own card, which links the term it matches: exactly, closely, as a narrower name such as a product's, or only as something related and easily mistaken for it. Each word links its card, which cites the vendor's own pages.</p>
-    <aside class="notice" aria-label="Status">
-      <p><strong>As of {{ map.source.committed | longDate }}.</strong> Drawn from the <a href="https://github.com/{{ map.source.repository }}/tree/{{ map.source.ref }}/{{ map.source.path }}/knowledge"><code>ki-agentic-ecosystems</code> knowledge map</a> at <code>{{ map.source.ref | truncate(9, true, "") }}</code>. A term or word still under review is marked as a draft.</p>
-    </aside>
+    {{ m.siteDraftNotice(map.source, "The crosswalk is generated from the term and vendor cards.") }}
+    {#- Image slot 3, the crosswalk picture (docs/design/image-brief.md). #}
+    {% imageSlot "crosswalk", "One industry term, the session, beside the words Anthropic, OpenAI, Google and Microsoft use for it, each marked exact, close, narrower or related." %}
   </div>
 </section>
 
@@ -66,3 +66,13 @@ permalink: /crosswalk/
     <p class="section-intro">A dash means no vendor card for that vendor links the term yet, not that the vendor has no word for it.</p>
   </div>
 </section>
+
+<section class="band band-inset" aria-labelledby="senses-title">
+  <div class="container">
+    <h2 id="senses-title">One name, several senses</h2>
+    <p class="section-intro">Some product names stand for more than one term; the crosswalk lists each under every term it means.</p>
+    {#- Image slot 7, names and their senses (Limner's optional extra). #}
+    {% imageSlot "names-senses", "Product names that the crosswalk lists under more than one term, such as Claude, Codex and Gemini." %}
+  </div>
+</section>
+

@@ -35,3 +35,16 @@
 {%- macro citeAll(sources) -%}
 {%- for source in sources %}{{ cite(source) }}{% if not loop.last %} {% endif %}{% endfor -%}
 {%- endmacro %}
+
+{#- The draft notice on every reference page: the whole site is a draft until its owner reviews the cards. #}
+{%- macro siteDraftNotice(source, what) -%}
+<aside class="notice notice-draft" aria-label="Status">
+  <p><strong>Draft, as of {{ source.reviewed | longDate }}.</strong> {{ what }} Every product card is a proposal awaiting review, and each fact on it is the maker's own claim unless marked observed, citing its source and the date it was read. A term or specification still under review is marked as a draft.</p>
+  <p class="notice-source">Generated from the <a href="https://github.com/{{ source.repository }}/tree/{{ source.ref }}/{{ source.path }}/knowledge"><code>ki-agentic-ecosystems</code> knowledge map</a> at <code>{{ source.ref | truncate(9, true, "") }}</code>, committed {{ source.committed | longDate }}. <a href="/how-to-read/">How to read this</a>.</p>
+</aside>
+{%- endmacro %}
+
+{#- A product, linked to its page, with its maker. #}
+{%- macro productLink(product) -%}
+<a href="/products/{{ product.slug }}/">{{ product.name }}</a> <span class="product-maker">{{ product.vendor }}</span>
+{%- endmacro %}

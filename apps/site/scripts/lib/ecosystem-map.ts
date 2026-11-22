@@ -21,6 +21,7 @@ import {
   parseSources,
   parseStateOfPlay,
   referenceDefinitions,
+  renderBlocks,
   renderInline,
   splitFrontMatter,
   textProperty
@@ -119,6 +120,48 @@ export interface CrosswalkTerm {
   words: { vendor: string; entries: VendorWord[] }[]
 }
 
+export interface ProductRef {
+  slug: string
+  name: string
+  vendor: string
+}
+
+/** A glossary entry: an industry term or one of Knowledge Islands' own words, with a page of its own. */
+export interface GlossaryTerm {
+  id: string
+  slug: string
+  /** `industry` for the field's terms, in reading order; `system` for Knowledge Islands' own words. */
+  kind: 'industry' | 'system'
+  label: string
+  status: string
+  /** The term's page on the site. */
+  url: string
+  /** The card on GitHub, at the pinned commit. */
+  cardUrl: string
+  summaryHtml: string
+  bodyHtml: string
+  /** The products whose cards say they are an instance of this term. */
+  instances: ProductRef[]
+}
+
+/** A specification card, or one of its parts, on the specifications page. */
+export interface SpecificationCard {
+  id: string
+  anchor: string
+  label: string
+  status: string
+  url: string
+  cardUrl: string
+  summaryHtml: string
+  bodyHtml: string
+}
+
+export interface Specification extends SpecificationCard {
+  parts: SpecificationCard[]
+  /** The products whose cards say they conform to it. */
+  conforming: ProductRef[]
+}
+
 export interface EcosystemMap {
   source: {
     repository: string
@@ -136,6 +179,8 @@ export interface EcosystemMap {
   products: Product[]
   vendors: string[]
   crosswalk: CrosswalkTerm[]
+  glossary: GlossaryTerm[]
+  specifications: Specification[]
 }
 
 /** A card's URL on GitHub at the pinned commit, from its path inside the skill folder. */
@@ -154,11 +199,12 @@ interface Card {
 }
 
 /**
- * Resolve a reference destination on a card: a web URL stays as it is, and a relative path to another file in the
- * skill becomes that file's GitHub URL at the pinned commit. A path that leaves the skill is refused.
+ * Resolve a reference destination on a card: a web URL stays as it is, a relative path to a card the site has a page
+ * for becomes that page, and any other file in the skill becomes its GitHub URL at the pinned commit. A path that
+ * leaves the skill is refused.
  */
 const resolver =
-  (card: Card, ref: string) =>
+  (card: Card, ref: string, pages: ReadonlyMap<string, string>) =>
   (label: string): string | undefined => {
     const destination = card.refs.get(label)
     if (destination === undefined) return undefined
@@ -166,8 +212,21 @@ const resolver =
     const [path, fragment] = destination.split('#')
     const resolved = posix.normalize(posix.join(posix.dirname(card.path), path))
     if (resolved.startsWith('..')) throw new Error(`${card.path}: the reference ${label} leaves the skill`)
+    const page = pages.get(resolved)
+    if (page !== undefined && fragment === undefined) return page
     return `${blobUrl(ref, resolved)}${fragment === undefined ? '' : `#${fragment}`}`
   }
+
+/** A specification card's anchor on the specifications page: its id with dots as hyphens, `spec-mcp-host`. */
+const specAnchor = (id: string): string => id.replace(/\./gu, '-')
+
+/** The site page a card has, if any: a glossary page per term, an anchor per specification, a page per product. */
+const pageOf = (card: Card): string | undefined => {
+  if (card.data.type === 'term' || card.data.type === 'system-term') return `/glossary/${slugOf(card.id)}/`
+  if (card.data.type === 'specification') return `/specifications/#${specAnchor(card.id)}`
+  if (card.data.type === 'product') return `/products/${slugOf(card.id)}/`
+  return undefined
+}
 
 const readCard = (path: string, text: string): Card => {
   const { data, body } = splitFrontMatter(text, path)
@@ -185,9 +244,15 @@ const productName = (title: string, vendor: string, where: string): string => {
   return title.slice(0, -suffix.length)
 }
 
-const buildProduct = (card: Card, order: CapabilitySpec[], cards: Map<string, Card>, pin: Pin): Product => {
+const buildProduct = (
+  card: Card,
+  order: CapabilitySpec[],
+  cards: Map<string, Card>,
+  pin: Pin,
+  pages: ReadonlyMap<string, string>
+): Product => {
   const where = card.path
-  const resolve = resolver(card, pin.ref)
+  const resolve = resolver(card, pin.ref, pages)
   const title = textProperty(card.data, 'title', where)
   const vendor = textProperty(card.data, 'vendor', where)
   const sources = parseSources(card.body, card.refs, where)
@@ -219,7 +284,7 @@ const buildProduct = (card: Card, order: CapabilitySpec[], cards: Map<string, Ca
         return {
           id: target.id,
           label: textProperty(target.data, 'title', target.path),
-          url: blobUrl(pin.ref, target.path)
+          url: pages.get(target.path) ?? blobUrl(pin.ref, target.path)
         }
       })
 
@@ -254,14 +319,33 @@ const buildProduct = (card: Card, order: CapabilitySpec[], cards: Map<string, Ca
   }
 }
 
-/** The industry terms in the graph's reading order, from the Industry row of its Subgraphs table. */
-const industryOrder = (graph: Card): string[] => {
-  const row = graph.body.split('\n').find((line) => line.startsWith('| Industry |'))
-  if (row === undefined) throw new Error(`${graph.path}: the Subgraphs table has no Industry row`)
-  return [...row.matchAll(/\]\[(industry\.[a-z0-9-]+)\]/gu)].map((match) => match[1])
+/**
+ * The card ids one row of the graph's Subgraphs table lists, in its order, such as the industry's reading order. The
+ * Industry row is required; another missing row orders nothing, and its cards fall back to their ids.
+ */
+const subgraphOrder = (graph: Card, subgraph: string, prefix: string): string[] => {
+  const row = graph.body.split('\n').find((line) => line.startsWith(`| ${subgraph} |`))
+  if (row === undefined && subgraph !== 'Industry') return []
+  if (row === undefined) throw new Error(`${graph.path}: the Subgraphs table has no ${subgraph} row`)
+  return [...row.matchAll(/\]\[([a-z0-9.-]+)\]/gu)].map((match) => match[1]).filter((id) => id.startsWith(prefix))
 }
 
-const buildCrosswalk = (cards: Card[], graph: Card, pin: Pin): { vendors: string[]; terms: CrosswalkTerm[] } => {
+const industryOrder = (graph: Card): string[] => subgraphOrder(graph, 'Industry', 'industry.')
+
+/** Sort cards by their place in a subgraph's order, unlisted cards last by id. */
+const byOrder =
+  (order: string[]) =>
+  (a: Card, b: Card): number => {
+    const rank = (id: string): number => (order.includes(id) ? order.indexOf(id) : order.length)
+    return rank(a.id) - rank(b.id) || a.id.localeCompare(b.id)
+  }
+
+const buildCrosswalk = (
+  cards: Card[],
+  graph: Card,
+  pin: Pin,
+  pages: ReadonlyMap<string, string>
+): { vendors: string[]; terms: CrosswalkTerm[] } => {
   const vendorCards = cards.filter((card) => card.path.startsWith(`${KNOWLEDGE_PATH}/vendors/`))
   const vendors = [...new Set(vendorCards.map((card) => textProperty(card.data, 'vendor', card.path)))].sort(
     (a, b) =>
@@ -270,9 +354,7 @@ const buildCrosswalk = (cards: Card[], graph: Card, pin: Pin): { vendors: string
   )
 
   const terms = cards.filter((card) => card.path.startsWith(`${KNOWLEDGE_PATH}/industry/`))
-  const order = industryOrder(graph)
-  const rank = (id: string): number => (order.includes(id) ? order.indexOf(id) : order.length)
-  terms.sort((a, b) => rank(a.id) - rank(b.id) || a.id.localeCompare(b.id))
+  terms.sort(byOrder(industryOrder(graph)))
 
   return {
     vendors,
@@ -302,12 +384,105 @@ const buildCrosswalk = (cards: Card[], graph: Card, pin: Pin): { vendors: string
         slug: slugOf(term.id),
         label: textProperty(term.data, 'title', term.path),
         status: textProperty(term.data, 'status', term.path),
-        url: blobUrl(pin.ref, term.path),
-        summaryHtml: renderInline(leadParagraph(term.body, term.path), resolver(term, pin.ref)),
+        url: pages.get(term.path) ?? blobUrl(pin.ref, term.path),
+        summaryHtml: renderInline(leadParagraph(term.body, term.path), resolver(term, pin.ref, pages)),
         words
       }
     })
   }
+}
+
+const productRef = (product: Product): ProductRef => ({
+  slug: product.slug,
+  name: product.name,
+  vendor: product.vendor
+})
+
+/** The glossary: the industry's terms in reading order, then Knowledge Islands' own words in the graph's order. */
+const buildGlossary = (
+  cards: Card[],
+  graph: Card,
+  products: Product[],
+  pin: Pin,
+  pages: ReadonlyMap<string, string>
+): GlossaryTerm[] => {
+  const entry = (card: Card, kind: GlossaryTerm['kind']): GlossaryTerm => {
+    const resolve = resolver(card, pin.ref, pages)
+    return {
+      id: card.id,
+      slug: slugOf(card.id),
+      kind,
+      label: textProperty(card.data, 'title', card.path),
+      status: textProperty(card.data, 'status', card.path),
+      url: pages.get(card.path) as string,
+      cardUrl: blobUrl(pin.ref, card.path),
+      summaryHtml: renderInline(leadParagraph(card.body, card.path), resolve),
+      bodyHtml: renderBlocks(card.body, resolve),
+      instances: products.filter((product) => product.instanceOf.some((ref) => ref.id === card.id)).map(productRef)
+    }
+  }
+  const industry = cards.filter((card) => card.data.type === 'term').sort(byOrder(industryOrder(graph)))
+  const system = cards
+    .filter((card) => card.data.type === 'system-term')
+    .sort(byOrder(subgraphOrder(graph, 'System', 'system.')))
+  const glossary = [...industry.map((card) => entry(card, 'industry')), ...system.map((card) => entry(card, 'system'))]
+  const slugs = new Set<string>()
+  for (const term of glossary) {
+    if (slugs.has(term.slug)) throw new Error(`${term.id}: its glossary page /glossary/${term.slug}/ is taken`)
+    slugs.add(term.slug)
+  }
+  return glossary
+}
+
+/** The specifications, each with its parts, in the order of the graph's Specifications row. */
+const buildSpecifications = (
+  cards: Card[],
+  graph: Card,
+  byId: Map<string, Card>,
+  products: Product[],
+  pin: Pin,
+  pages: ReadonlyMap<string, string>
+): Specification[] => {
+  const order = subgraphOrder(graph, 'Specifications', 'spec.')
+  const entry = (card: Card): SpecificationCard => {
+    const resolve = resolver(card, pin.ref, pages)
+    return {
+      id: card.id,
+      anchor: specAnchor(card.id),
+      label: textProperty(card.data, 'title', card.path),
+      status: textProperty(card.data, 'status', card.path),
+      url: pages.get(card.path) as string,
+      cardUrl: blobUrl(pin.ref, card.path),
+      summaryHtml: renderInline(leadParagraph(card.body, card.path), resolve),
+      bodyHtml: renderBlocks(card.body, resolve, 2)
+    }
+  }
+  const specs = cards.filter((card) => card.data.type === 'specification')
+  const partIds = new Set(
+    specs.flatMap((card) =>
+      cardLinks(card.data, card.path)
+        .filter((link) => link.predicate === 'dcterms:hasPart')
+        .map((link) => link.target)
+    )
+  )
+  return specs
+    .filter((card) => !partIds.has(card.id))
+    .sort(byOrder(order))
+    .map((card) => {
+      const parts = cardLinks(card.data, card.path)
+        .filter((link) => link.predicate === 'dcterms:hasPart')
+        .map((link) => {
+          const part = byId.get(link.target)
+          if (part === undefined) throw new Error(`${card.path}: has the part ${link.target}, which no card holds`)
+          return part
+        })
+        .sort(byOrder(order))
+      return {
+        ...entry(card),
+        parts: parts.map(entry),
+        conforming: products.filter((product) => product.conformsTo.some((ref) => ref.id === card.id)).map(productRef)
+      }
+    })
 }
 
 /**
@@ -333,6 +508,11 @@ export const buildEcosystemMap = (files: ReadonlyMap<string, string>, pin: Pin):
   }
   const graph = cards.find((card) => card.data.type === 'graph')
   if (graph === undefined) throw new Error('the knowledge map has no graph root')
+  const pages = new Map<string, string>()
+  for (const card of cards) {
+    const page = pageOf(card)
+    if (page !== undefined) pages.set(card.path, page)
+  }
 
   const capabilities = order.map((spec) => {
     const card = byId.get(spec.term)
@@ -342,17 +522,17 @@ export const buildEcosystemMap = (files: ReadonlyMap<string, string>, pin: Pin):
       slug: slugOf(spec.term),
       label: spec.label,
       asks: spec.asks,
-      url: blobUrl(pin.ref, card.path)
+      url: pages.get(card.path) ?? blobUrl(pin.ref, card.path)
     }
   })
 
   const products = cards
     .filter((card) => card.data.type === 'product')
-    .map((card) => buildProduct(card, order, byId, pin))
+    .map((card) => buildProduct(card, order, byId, pin, pages))
     .sort((a, b) => a.name.localeCompare(b.name))
   if (products.length === 0) throw new Error('the knowledge map holds no product cards')
 
-  const { vendors, terms } = buildCrosswalk(cards, graph, pin)
+  const { vendors, terms } = buildCrosswalk(cards, graph, pin, pages)
 
   return {
     source: {
@@ -368,7 +548,9 @@ export const buildEcosystemMap = (files: ReadonlyMap<string, string>, pin: Pin):
     capabilities,
     products,
     vendors,
-    crosswalk: terms
+    crosswalk: terms,
+    glossary: buildGlossary(cards, graph, products, pin, pages),
+    specifications: buildSpecifications(cards, graph, byId, products, pin, pages)
   }
 }
 
@@ -382,6 +564,20 @@ export const expectedPages = (map: EcosystemMap): { page: string; anchors: strin
     ])
   },
   { page: 'crosswalk/index.html', anchors: map.crosswalk.map((term) => `term-${term.slug}`) },
+  { page: 'index.html', anchors: ['start', ...map.products.map((product) => `product-${product.slug}`)] },
+  {
+    page: 'overview/index.html',
+    anchors: map.glossary
+      .filter((term) => term.kind === 'industry' && term.instances.length > 0)
+      .map((term) => `role-${term.slug}`)
+  },
+  { page: 'how-to-read/index.html', anchors: ['values', 'evidence', 'status'] },
+  { page: 'glossary/index.html', anchors: map.glossary.map((term) => `term-${term.slug}`) },
+  ...map.glossary.map((term) => ({ page: `glossary/${term.slug}/index.html`, anchors: ['definition'] })),
+  {
+    page: 'specifications/index.html',
+    anchors: map.specifications.flatMap((spec) => [spec.anchor, ...spec.parts.map((part) => part.anchor)])
+  },
   ...map.products.map((product) => ({
     page: `products/${product.slug}/index.html`,
     anchors: [
@@ -427,5 +623,8 @@ export const mapFaults = (data: unknown): string[] => {
       if (!DAY.test(String(ref?.read))) faults.push(`${where} source ${ref?.id} has no read date`)
   }
   if (!Array.isArray(map.crosswalk) || map.crosswalk.length === 0) faults.push('crosswalk must be a non-empty list')
+  if (!Array.isArray(map.glossary) || map.glossary.length === 0) faults.push('glossary must be a non-empty list')
+  if (!Array.isArray(map.specifications) || map.specifications.length === 0)
+    faults.push('specifications must be a non-empty list')
   return faults
 }

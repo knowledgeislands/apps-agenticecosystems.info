@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, relative, resolve, sep } from 'node:path'
 import type { UserConfig } from '@11ty/eleventy'
 import JSON5 from 'json5'
@@ -118,14 +118,14 @@ export default function (eleventyConfig: UserConfig) {
   // ── Filters ──────────────────────────────────────────────────────────────
 
   // whereEq - the items of an array whose key equals a value:
-  // {% for product in ecosystem.products | whereEq("group", group.id) %}
+  // {% for term in ecosystemMap.glossary | whereEq("kind", "industry") %}
   eleventyConfig.addFilter('whereEq', (arr: unknown, key: string, value: unknown) => {
     if (!Array.isArray(arr)) return []
     return arr.filter((item) => (item as Record<string, unknown>)[key] === value)
   })
 
   // labelFor - the label of the entry with an id, from a list of { id, label }:
-  // {{ ecosystem.productRoles | labelFor(role) }}
+  // {{ ecosystemMap.capabilities | labelFor(cell.id) }}
   eleventyConfig.addFilter('labelFor', (arr: unknown, id: string) => {
     if (!Array.isArray(arr)) return id
     const found = arr.find((item) => (item as { id?: unknown }).id === id) as { label?: string } | undefined
@@ -151,6 +151,54 @@ export default function (eleventyConfig: UserConfig) {
     const match = typeof iso === 'string' ? iso.match(/^(\d{4})-(\d{2})-(\d{2})$/) : null
     if (!match) throw new Error(`longDate expects YYYY-MM-DD, got ${String(iso)}`)
     return `${Number(match[3])} ${months[Number(match[2]) - 1]} ${match[1]}`
+  })
+
+  // ── Shortcode: image slot ────────────────────────────────────────────────
+  // {% imageSlot "layers-stack", "fallback alt text" %} marks where one of the designer's diagrams goes. The images
+  // live in src/assets/images/diagrams/ as <name>-light.svg and <name>-dark.svg, with alt text under a `## <name>`
+  // heading in that folder's README.md, and its caption on a `- **Caption:**` line (docs/design/image-brief.md). The slot renders only once the light image
+  // exists, so the build passes before the images land; until then it leaves only a comment in the page.
+  const diagrams = 'src/assets/images/diagrams'
+  /** The image's alt text, the first paragraph under its `## <name>` heading, and its `- **Caption:**` line. */
+  const describe = (name: string, fallback: string): { alt: string; caption?: string } => {
+    const readme = `${diagrams}/README.md`
+    if (!existsSync(readme)) return { alt: fallback }
+    const lines = readFileSync(readme, 'utf-8').split('\n')
+    const start = lines.findIndex((line) => line.trim() === `## ${name}`)
+    if (start === -1) return { alt: fallback }
+    const rest = lines.slice(start + 1)
+    const end = rest.findIndex((line) => line.startsWith('#'))
+    const block = end === -1 ? rest : rest.slice(0, end)
+    const paragraph: string[] = []
+    for (const line of block) {
+      if (line.trim() === '') {
+        if (paragraph.length > 0) break
+        continue
+      }
+      if (line.startsWith('- ')) break
+      paragraph.push(line.trim())
+    }
+    const caption = block
+      .find((line) => line.startsWith('- **Caption:**'))
+      ?.replace('- **Caption:**', '')
+      .trim()
+    return { alt: paragraph.length > 0 ? paragraph.join(' ') : fallback, ...(caption ? { caption } : {}) }
+  }
+  const attr = (text: string): string =>
+    text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  eleventyConfig.addShortcode('imageSlot', (name: string, fallbackAlt: string) => {
+    if (!/^[a-z0-9-]+$/.test(name)) throw new Error(`imageSlot: bad image name ${name}`)
+    const light = `${diagrams}/${name}-light.svg`
+    if (!existsSync(light)) return `<!-- image slot: ${name}, waiting for ${light} -->`
+    const dark = existsSync(`${diagrams}/${name}-dark.svg`)
+      ? `<source srcset="/assets/images/diagrams/${name}-dark.svg" media="(prefers-color-scheme: dark)" />`
+      : ''
+    const { alt, caption } = describe(name, fallbackAlt)
+    return (
+      `<figure class="diagram" id="figure-${name}"><picture>${dark}` +
+      `<img src="/assets/images/diagrams/${name}-light.svg" alt="${attr(alt)}" loading="lazy" />` +
+      `</picture>${caption ? `<figcaption>${attr(caption)}</figcaption>` : ''}</figure>`
+    )
   })
 
   // ── Return the config ────────────────────────────────────────────────────
