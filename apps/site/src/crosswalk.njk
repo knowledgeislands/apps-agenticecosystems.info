@@ -1,0 +1,68 @@
+---
+layout: layouts/base.njk
+title: Crosswalk
+permalink: /crosswalk/
+---
+{#- Generated: every term and vendor word comes from `_data/ecosystemMap.json5`, read from the term and vendor cards. #}
+{%- import "macros/map.njk" as m %}
+{%- set map = ecosystemMap %}
+
+<section class="hero hero-compact" aria-labelledby="page-title">
+  <div class="container">
+    <h1 id="page-title">Crosswalk</h1>
+    <p class="lede">Each term of the map, and what each vendor calls it.</p>
+    <p>The terms are the industry's, in the map's reading order. A vendor's word is read from its own card, which links the term it matches: exactly, closely, as a narrower name such as a product's, or only as something related and easily mistaken for it. Each word links its card, which cites the vendor's own pages.</p>
+    <aside class="notice" aria-label="Status">
+      <p><strong>As of {{ map.source.committed | longDate }}.</strong> Drawn from the <a href="https://github.com/{{ map.source.repository }}/tree/{{ map.source.ref }}/{{ map.source.path }}/knowledge"><code>ki-agentic-ecosystems</code> knowledge map</a> at <code>{{ map.source.ref | truncate(9, true, "") }}</code>. A term or word still under review is marked as a draft.</p>
+    </aside>
+  </div>
+</section>
+
+<section class="band" aria-labelledby="crosswalk-title">
+  <div class="container">
+    <h2 id="crosswalk-title" class="sr-only">The crosswalk</h2>
+    <dl class="legend legend-matches" aria-label="Key">
+      <div><dt>exact</dt><dd>means exactly the term</dd></div>
+      <div><dt>close</dt><dd>means nearly the term</dd></div>
+      <div><dt>narrower</dt><dd>a name for one kind of it, such as a product</dd></div>
+      <div><dt>related</dt><dd>only related, and easily mistaken for it</dd></div>
+    </dl>
+    <div class="matrix-scroll" role="region" aria-labelledby="crosswalk-caption" tabindex="0">
+      <table class="crosswalk">
+        <caption id="crosswalk-caption">{{ map.crosswalk.length }} terms across {{ map.vendors.length }} vendors' cards.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Term</th>
+            {%- for vendor in map.vendors %}
+            <th scope="col">{{ vendor }}</th>
+            {%- endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {%- for term in map.crosswalk %}
+          <tr id="term-{{ term.slug }}">
+            <th scope="row" class="crosswalk-term">
+              <a href="{{ term.url }}">{{ term.label }}</a>{% if term.status != "agreed" %} {{ m.statusBadge(term.status) }}{% endif %}
+              <span class="crosswalk-summary">{{ term.summaryHtml | safe }}</span>
+            </th>
+            {%- for column in term.words %}
+            <td>
+              {%- if column.entries.length %}
+              <ul class="words">
+                {%- for entry in column.entries %}
+                <li><a data-plain href="{{ entry.url }}">{{ entry.word }}</a> <span class="match match-{{ entry.match }}">{{ entry.match }}</span>{% if entry.status != "agreed" %} {{ m.statusBadge(entry.status) }}{% endif %}</li>
+                {%- endfor %}
+              </ul>
+              {%- else %}
+              <span class="none" aria-label="No card">–</span>
+              {%- endif %}
+            </td>
+            {%- endfor %}
+          </tr>
+          {%- endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="section-intro">A dash means no vendor card for that vendor links the term yet, not that the vendor has no word for it.</p>
+  </div>
+</section>

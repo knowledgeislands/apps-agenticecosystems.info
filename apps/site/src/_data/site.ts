@@ -1,8 +1,9 @@
 /**
- * The site's identity and its one page's navigation, in reading order.
+ * The site's identity and its navigation, in reading order: the home page's sections, then the pages generated from
+ * the backpack's knowledge map.
  *
- * The page's sections are listed here rather than in the template, so the header, the sitemap and any later page
- * share one ordering.
+ * The navigation is listed here rather than in the template, so the header and every page share one ordering. The
+ * home page's sections are addressed from the root, so they work from any page.
  */
 const site = {
   title: 'Agentic Ecosystems',
@@ -11,9 +12,11 @@ const site = {
     'A public reference map of agentic systems: the terms, the layers and the products, and what each product can do.',
   parent: { label: 'a Knowledge Islands microsite', href: 'https://knowledgeislands.info' },
   nav: [
-    { label: 'Terms', href: '#terms' },
-    { label: 'Layers', href: '#layers' },
-    { label: 'Products', href: '#products' }
+    { label: 'Terms', href: '/#terms' },
+    { label: 'Layers', href: '/#layers' },
+    { label: 'Products', href: '/#products' },
+    { label: 'Matrix', href: '/matrix/' },
+    { label: 'Crosswalk', href: '/crosswalk/' }
   ]
 }
 

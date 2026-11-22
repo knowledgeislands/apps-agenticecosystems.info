@@ -1,0 +1,37 @@
+{#- Shared pieces of the generated pages: a card's status, a capability value and a source citation. Everything they
+    show comes from `_data/ecosystemMap.json5`. #}
+
+{%- macro statusLabel(status) -%}
+{%- if status == "proposal" %}Draft{% elif status == "future-concept" %}Future concept{% elif status == "agreed" %}Agreed{% else %}{{ status }}{% endif -%}
+{%- endmacro %}
+
+{%- macro statusBadge(status) -%}
+<span class="badge badge-status badge-{{ status }}">{{ statusLabel(status) }}</span>
+{%- endmacro %}
+
+{#- The draft notice every generated page carries while any card on it is a proposal. #}
+{%- macro draftNotice(asOf, source, what) -%}
+<aside class="notice notice-draft" aria-label="Status">
+  <p><strong>Draft, as of {{ asOf | longDate }}.</strong> {{ what }} proposals awaiting review in the Knowledge Islands backpack: every fact is the maker's own claim unless marked observed, and each one cites its source and the date it was read.</p>
+  <p class="notice-source">Generated from the <a href="https://github.com/{{ source.repository }}/tree/{{ source.ref }}/{{ source.path }}/knowledge"><code>ki-agentic-ecosystems</code> knowledge map</a> at <code>{{ source.ref | truncate(9, true, "") }}</code>, committed {{ source.committed | longDate }}, under its <a href="{{ source.standardUrl }}">product cards standard</a> ({{ source.standardStatus }}).</p>
+</aside>
+{%- endmacro %}
+
+{%- macro valueGlyph(value) -%}
+{%- if value == "yes" %}●{% elif value == "partial" %}◐{% elif value == "no" %}○{% else %}?{% endif -%}
+{%- endmacro %}
+
+{%- macro valueLabel(value) -%}
+{%- if value == "yes" %}Yes{% elif value == "partial" %}Partial{% elif value == "no" %}No{% else %}Unknown{% endif -%}
+{%- endmacro %}
+
+{#- One source citation: its id, linked to the source where it has a URL, titled with what it is and when it was read.
+    The title is the generator's escaped HTML with its tags stripped, so it is marked safe rather than escaped twice. #}
+{%- macro cite(source) -%}
+{%- set title = source.titleHtml | striptags + ", read " + (source.read | longDate) -%}
+{%- if source.url %}<a class="cite" data-plain href="{{ source.url }}" title="{{ title | safe }}">{{ source.id }}</a>{% else %}<span class="cite" title="{{ title | safe }}">{{ source.id }}</span>{% endif -%}
+{%- endmacro %}
+
+{%- macro citeAll(sources) -%}
+{%- for source in sources %}{{ cite(source) }}{% if not loop.last %} {% endif %}{% endfor -%}
+{%- endmacro %}

@@ -1,0 +1,65 @@
+---
+layout: layouts/base.njk
+title: Capability matrix
+permalink: /matrix/
+---
+{#- Generated: every product, capability, value and source comes from `_data/ecosystemMap.json5`. #}
+{%- import "macros/map.njk" as m %}
+{%- set map = ecosystemMap %}
+{%- set drafts = map.products | whereEq("status", "proposal") %}
+
+<section class="hero hero-compact" aria-labelledby="page-title">
+  <div class="container">
+    <h1 id="page-title">Capability matrix</h1>
+    <p class="lede">What each product can do, read against the terms of the map.</p>
+    <p>Each row is a product and each column a capability, in the order its card standard sets. A cell says whether a source says the product does it, does it only in part or in preview, does not, or whether no source read says either way. Each cell links to the product's page for the detail, and cites its sources, each with the date it was read.</p>
+    {%- if drafts.length %}
+    {{ m.draftNotice(map.source.reviewed, map.source, "These product cards are") }}
+    {%- endif %}
+  </div>
+</section>
+
+<section class="band" aria-labelledby="matrix-title">
+  <div class="container">
+    <h2 id="matrix-title" class="sr-only">The matrix</h2>
+    <ul class="legend" aria-label="Key">
+      <li><span class="value value-yes" aria-hidden="true">{{ m.valueGlyph("yes") }}</span> Yes</li>
+      <li><span class="value value-partial" aria-hidden="true">{{ m.valueGlyph("partial") }}</span> Partial: preview, beta, in part or through an adapter</li>
+      <li><span class="value value-no" aria-hidden="true">{{ m.valueGlyph("no") }}</span> No</li>
+      <li><span class="value value-unknown" aria-hidden="true">{{ m.valueGlyph("unknown") }}</span> Unknown: no source read says either way</li>
+    </ul>
+    <div class="matrix-scroll" role="region" aria-labelledby="matrix-caption" tabindex="0">
+      <table class="matrix">
+        <caption id="matrix-caption">{{ map.products.length }} products against {{ map.capabilities.length }} capabilities. Sources read {% for date in map.source.readDates %}{{ date | longDate }}{% if not loop.last %}, {% endif %}{% endfor %}.</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="matrix-corner">Product</th>
+            {%- for capability in map.capabilities %}
+            <th scope="col" class="matrix-head" id="capability-{{ capability.slug }}"><a data-plain href="{{ capability.url }}" title="{{ capability.asks }}"><span>{{ capability.label }}</span></a></th>
+            {%- endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {%- for product in map.products %}
+          <tr id="product-{{ product.slug }}">
+            <th scope="row" class="matrix-product">
+              <a href="/products/{{ product.slug }}/">{{ product.name }}</a>
+              <span class="matrix-maker">{{ product.vendor }}</span>
+              <span class="matrix-reviewed">{{ m.statusLabel(product.status) }}, reviewed {{ product.reviewed | longDate }}</span>
+            </th>
+            {%- for cell in product.capabilities %}
+            <td class="matrix-cell" id="cell-{{ product.slug }}-{{ cell.slug }}">
+              <a class="value value-{{ cell.value }}" href="/products/{{ product.slug }}/#cap-{{ cell.slug }}" title="{{ product.name }}, {{ map.capabilities[loop.index0].label }}: {{ m.valueLabel(cell.value) }}. {{ cell.detailHtml | striptags | safe }}"><span aria-hidden="true">{{ m.valueGlyph(cell.value) }}</span><span class="sr-only">{{ m.valueLabel(cell.value) }}</span></a>
+              {%- if cell.sources.length %}
+              <span class="cell-sources">{{ m.citeAll(cell.sources) }}</span>
+              {%- endif %}
+            </td>
+            {%- endfor %}
+          </tr>
+          {%- endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="section-intro">The terms behind the columns, and what each vendor calls them, are in the <a href="/crosswalk/">crosswalk</a>.</p>
+  </div>
+</section>

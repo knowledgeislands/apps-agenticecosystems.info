@@ -18,6 +18,9 @@ permalink: /
       <p><strong>First cut.</strong> Every entry below is a placeholder, seeded from {{ ecosystem.meta.seededFrom }}. The researched map will replace it from its canonical home in {{ ecosystem.meta.canonicalHome }}.</p>
     </aside>
     {%- endif %}
+    <aside class="notice notice-draft" aria-label="Researched so far">
+      <p><strong>Researched so far, in draft.</strong> {{ ecosystemMap.products.length }} products are read against {{ ecosystemMap.capabilities.length }} capabilities in the <a href="/matrix/">capability matrix</a>, each with its own page, and the <a href="/crosswalk/">crosswalk</a> sets each term beside what each vendor calls it. They are generated from the Knowledge Islands backpack's knowledge map, as of {{ ecosystemMap.source.reviewed | longDate }}, and are proposals awaiting review.</p>
+    </aside>
   </div>
 </section>
 

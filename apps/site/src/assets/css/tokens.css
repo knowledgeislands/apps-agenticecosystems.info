@@ -22,6 +22,9 @@
     --notice-border: #e2c37a;
     --border: #d9d6cd;
     --ring: #1f4e79;
+    --value-yes: #1d6b3a;
+    --value-partial: #8a5a00;
+    --value-no: #9b2c2c;
     --radius: 0.625rem;
     --measure: 68ch;
   }
@@ -43,6 +46,9 @@
       --notice-border: #7a6224;
       --border: #2c3646;
       --ring: #9cc3e6;
+      --value-yes: #7fd19b;
+      --value-partial: #f0c36a;
+      --value-no: #f19a9a;
     }
   }
 }
@@ -62,6 +68,9 @@
   --color-notice-foreground: var(--notice-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
+  --color-value-yes: var(--value-yes);
+  --color-value-partial: var(--value-partial);
+  --color-value-no: var(--value-no);
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

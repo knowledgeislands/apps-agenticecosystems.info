@@ -1,0 +1,93 @@
+---
+layout: layouts/base.njk
+pagination:
+  data: ecosystemMap.products
+  size: 1
+  alias: product
+permalink: "/products/{{ product.slug }}/"
+eleventyComputed:
+  title: "{{ product.name }}"
+---
+{#- Generated: one page per product card in `_data/ecosystemMap.json5`. Nothing here is content. #}
+{%- import "macros/map.njk" as m %}
+{%- set map = ecosystemMap %}
+
+<section class="hero hero-compact" aria-labelledby="page-title">
+  <div class="container">
+    <p class="breadcrumb"><a href="/matrix/">Capability matrix</a></p>
+    <h1 id="page-title">{{ product.name }} {{ m.statusBadge(product.status) }}</h1>
+    <p class="product-maker">{{ product.vendor }} · reviewed {{ product.reviewed | longDate }} · <a href="{{ product.url }}">its card</a></p>
+    <p>{{ product.summaryHtml | safe }}</p>
+    {%- if product.instanceOf.length or product.conformsTo.length %}
+    <dl class="facts">
+      {%- if product.instanceOf.length %}
+      <div><dt>An instance of</dt><dd>{% for card in product.instanceOf %}<a href="{{ card.url }}">{{ card.label }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</dd></div>
+      {%- endif %}
+      {%- if product.conformsTo.length %}
+      <div><dt>Conforms to</dt><dd>{% for card in product.conformsTo %}<a href="{{ card.url }}">{{ card.label }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</dd></div>
+      {%- endif %}
+    </dl>
+    {%- endif %}
+    {%- if product.status == "proposal" %}
+    {{ m.draftNotice(product.reviewed, map.source, "This product card and its facts are") }}
+    {%- endif %}
+  </div>
+</section>
+
+<section id="capabilities" class="band" aria-labelledby="capabilities-title">
+  <div class="container">
+    <h2 id="capabilities-title">Capabilities</h2>
+    <div class="matrix-scroll" role="region" aria-labelledby="capabilities-title" tabindex="0">
+      <table class="capabilities">
+        <thead>
+          <tr><th scope="col">Capability</th><th scope="col">Value</th><th scope="col">Detail</th><th scope="col">Sources</th></tr>
+        </thead>
+        <tbody>
+          {%- for cell in product.capabilities %}
+          {%- set capability = map.capabilities[loop.index0] %}
+          <tr id="cap-{{ cell.slug }}">
+            <th scope="row"><a href="{{ capability.url }}" title="{{ capability.asks }}">{{ capability.label }}</a></th>
+            <td><span class="value value-{{ cell.value }}" aria-hidden="true">{{ m.valueGlyph(cell.value) }}</span> {{ m.valueLabel(cell.value) }}</td>
+            <td>{{ cell.detailHtml | safe }}</td>
+            <td class="cell-sources">{% if cell.sources.length %}{{ m.citeAll(cell.sources) }}{% else %}None{% endif %}</td>
+          </tr>
+          {%- endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="state-of-play" class="band band-inset" aria-labelledby="state-title">
+  <div class="container">
+    <h2 id="state-title">State of play</h2>
+    <p class="section-intro">How things stand, newest first, as the card records it.</p>
+    <ul class="state-of-play">
+      {%- for item in product.stateOfPlay %}
+      <li><time datetime="{{ item.date }}">{{ item.date | longDate }}</time> <span>{{ item.html | safe }}{% if item.sources.length %} <span class="cell-sources">{{ m.citeAll(item.sources) }}</span>{% endif %}</span></li>
+      {%- endfor %}
+    </ul>
+  </div>
+</section>
+
+<section id="sources" class="band" aria-labelledby="sources-title">
+  <div class="container">
+    <h2 id="sources-title">Sources</h2>
+    <div class="matrix-scroll" role="region" aria-labelledby="sources-title" tabindex="0">
+      <table class="sources">
+        <thead>
+          <tr><th scope="col">Id</th><th scope="col">Source</th><th scope="col">Read</th></tr>
+        </thead>
+        <tbody>
+          {%- for source in product.sources %}
+          <tr id="source-{{ source.id }}">
+            <th scope="row">{{ source.id }}</th>
+            <td>{% if source.url %}<a href="{{ source.url }}">{{ source.titleHtml | safe }}</a>{% else %}{{ source.titleHtml | safe }}{% endif %}</td>
+            <td><time datetime="{{ source.read }}">{{ source.read | longDate }}</time></td>
+          </tr>
+          {%- endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

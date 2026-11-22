@@ -57,7 +57,8 @@ export default function (eleventyConfig: UserConfig) {
     return content.replace(
       /<a\s+([^>]*href="https?:\/\/[^"]*"[^>]*)>([\s\S]*?)<\/a>/gi,
       (match, attrs: string, inner: string) => {
-        if (/class="ext-icon"/.test(inner)) return match
+        // A link marked data-plain, such as a source citation in the matrix, stays bare: an icon on each would bury it.
+        if (/class="ext-icon"/.test(inner) || /\sdata-plain\b/.test(` ${attrs}`)) return match
         return `<a ${attrs}>${inner}${externalLinkIcon}</a>`
       }
     )
@@ -129,6 +130,27 @@ export default function (eleventyConfig: UserConfig) {
     if (!Array.isArray(arr)) return id
     const found = arr.find((item) => (item as { id?: unknown }).id === id) as { label?: string } | undefined
     return found?.label ?? id
+  })
+
+  // longDate - an ISO date as the page writes it: {{ "2026-11-22" | longDate }} → 22 November 2026
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ]
+  eleventyConfig.addFilter('longDate', (iso: unknown) => {
+    const match = typeof iso === 'string' ? iso.match(/^(\d{4})-(\d{2})-(\d{2})$/) : null
+    if (!match) throw new Error(`longDate expects YYYY-MM-DD, got ${String(iso)}`)
+    return `${Number(match[3])} ${months[Number(match[2]) - 1]} ${match[1]}`
   })
 
   // ── Return the config ────────────────────────────────────────────────────

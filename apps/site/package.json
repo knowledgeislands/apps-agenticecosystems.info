@@ -7,21 +7,25 @@
     "concurrently": "^10.0.5",
     "json5": "^2.2.3",
     "tailwindcss": "^4.3.3",
-    "wrangler": "^4.129.0"
+    "wrangler": "^4.129.0",
+    "yaml": "^2.9.1"
   },
   "private": true,
   "scripts": {
-    "build": "bun node_modules/@11ty/eleventy/cmd.cjs --config=eleventy.config.ts && bun run verify:ecosystem",
+    "build": "bun node_modules/@11ty/eleventy/cmd.cjs --config=eleventy.config.ts && bun run verify:ecosystem && bun run verify:ecosystem-map",
+    "check:ecosystem-map": "bun scripts/sync-ecosystem-map.ts --check",
     "clean": "rm -rf dist .wrangler",
     "deploy": "bunx wrangler deploy",
     "ki:site:dev": "concurrently --kill-others-on-fail --names css,11ty --prefix-colors cyan,yellow \"bun run ki:site:dev:css\" \"bun run ki:site:dev:serve\"",
     "ki:site:dev:css": "bunx tailwindcss -i src/assets/css/main.css -o ./dist/assets/css/main.css --watch",
     "ki:site:dev:serve": "bun node_modules/@11ty/eleventy/cmd.cjs --config=eleventy.config.ts --serve --port 3000",
     "preview": "bun run build && bunx wrangler dev",
+    "sync:ecosystem-map": "bun scripts/sync-ecosystem-map.ts",
     "test": "bun test scripts",
     "typecheck": "bunx tsc --noEmit -p tsconfig.json",
     "upload": "bunx wrangler versions upload",
-    "verify:ecosystem": "bun scripts/verify-ecosystem.ts"
+    "verify:ecosystem": "bun scripts/verify-ecosystem.ts",
+    "verify:ecosystem-map": "bun scripts/verify-ecosystem-map.ts"
   },
   "type": "module"
 }

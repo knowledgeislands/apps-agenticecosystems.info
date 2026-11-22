@@ -1,9 +1,9 @@
 // The ecosystem map the page renders: its terms, its layers and its products.
 //
-// This file is not the canonical source. The knowledge is planned to live in Knowledge Islands Principal, as the
-// Agentic Ecosystems knowledge graph in `Resources/Agentic Ecosystems/`, layered under the KI Agent Backpack's
-// `ki-agentic-ecosystems` terms. A later sync replaces this file from there, at a pinned revision, and every entry then
-// cites its card.
+// This file is not the canonical source. The knowledge lives in the KI Agent Backpack, as the `ki-agentic-ecosystems`
+// skill's knowledge map (ki.summit change 21, ECOSYSTEM-HOME b). The matrix, the crosswalk and the product pages are
+// already generated from it, through `ecosystemMap.json5`; a later sync replaces this file from there too, at a pinned
+// revision, and every entry then cites its card.
 //
 // Until then it is a seed. It holds only what the plan for the map already states, and every entry is marked
 // `placeholder: true`, which the page shows. `scripts/verify-ecosystem.ts` validates the shape during the build.
@@ -12,7 +12,7 @@
     status: 'placeholder',
     revised: '2026-11-21',
     seededFrom: 'the Knowledge Islands plan for the agentic systems ecosystem map, 21 November 2026',
-    canonicalHome: 'Knowledge Islands Principal, Resources/Agentic Ecosystems/ (planned)',
+    canonicalHome: "the KI Agent Backpack's ki-agentic-ecosystems knowledge map",
   },
 
   terms: [
