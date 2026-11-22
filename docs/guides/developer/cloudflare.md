@@ -1,6 +1,6 @@
 # Cloudflare
 
-The Agentic Ecosystems microsite is deployed as a Cloudflare Worker serving the static files generated in `apps/site/dist/`. The versioned Worker configuration lives in `apps/site/wrangler.jsonc`; this guide records the complementary settings owned by the Cloudflare dashboard.
+The Agentic Ecosystems microsite is deployed as a Cloudflare Worker, in the Knowledge Islands Cloudflare account, serving the static files generated in `apps/site/dist/`. The versioned Worker configuration lives in `apps/site/wrangler.jsonc`; this guide records the complementary settings owned by the Cloudflare dashboard.
 
 Nothing here is live yet. The domain is registered; the Worker, its Workers Build and its domains are created at the first deploy.
 

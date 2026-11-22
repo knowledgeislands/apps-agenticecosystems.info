@@ -1,6 +1,7 @@
 {
   // info-agenticecosystems — Cloudflare Workers Static Assets deployment, not Pages.
-  // The Worker name is the hostname reversed, as every Personal-account Worker is.
+  // It deploys to the Knowledge Islands Cloudflare account. The Worker name is the
+  // hostname reversed.
   "name": "info-agenticecosystems",
   "compatibility_date": "2026-11-01",
   // Eleventy builds to dist/ inside this workspace; the Worker serves it directly.
